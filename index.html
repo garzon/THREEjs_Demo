@@ -1,0 +1,105 @@
+<html>
+    <body>
+        <script src="three.min.js"></script>
+        <script src="dat.gui.min.js"></script>
+        <script>
+            var scene, camera, renderer;
+            var textureLoader;
+
+            init();
+
+            function addCube() {
+                var geometry = new THREE.BoxGeometry(2, 2, 2);
+                var material = new THREE.MeshBasicMaterial({color: 0xff0000, wireframe: true});
+                var mesh = new THREE.Mesh(geometry, material);
+                mesh.position = new THREE.Vector3(0, 0, 0);
+                scene.add(mesh);
+            }
+
+            function addBox() {
+                var geometry = new THREE.BoxGeometry(3, 3, 3);
+                var texture = textureLoader.load("texture/RTS_Crate.png");
+                var material = new THREE.MeshPhongMaterial({map: texture});
+                var mesh = new THREE.Mesh(geometry, material);
+                mesh.position.set(2, 4, 1.5);
+                scene.add(mesh);
+            }
+
+            function addBall() {
+                var material = new THREE.MeshPhysicalMaterial({
+                    color: new THREE.Color().setRGB(0.5, 0.5, 0),
+                    clearCoat:  0.5,
+                    clearCoatRoughness: 0.5,
+                    metalness: 0.1,
+                    roughness: 0.5,
+                    reflectivity: 0.5
+                });
+                var geometry = new THREE.SphereBufferGeometry(1, 30, 30);
+                var mesh = new THREE.Mesh(geometry, material);
+                mesh.position.set(6, 0, 1);
+                scene.add(mesh);
+            }
+
+            function addGround() {
+				var texture = textureLoader.load("texture/Cobblestone.png");
+				var material = new THREE.MeshPhongMaterial({color: 0xffffff, map: texture});
+				texture.anisotropy = renderer.getMaxAnisotropy();
+				texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+				texture.repeat.set(100, 100);
+                var ground_geometry = new THREE.PlaneBufferGeometry(512, 512);
+                var mesh = new THREE.Mesh(ground_geometry, material);
+                scene.add(mesh);
+            }
+
+            function addLight() {
+                var pointLight = new THREE.DirectionalLight(0xffffff, 2);
+                pointLight.position.set(5, 10, 10);
+                scene.add(pointLight);
+                scene.add(new THREE.AmbientLight(0xffffff, 0.3));
+            }
+
+            function addGUI() {
+                var data = {
+                    x: -5, y: -5, z: 7,
+                    look_x: 0, look_y: 0, look_z: 2,
+                };
+                
+                window.redraw = function() {
+                    requestAnimationFrame(redraw);
+                    camera.position.set(data.x, data.y, data.z);
+                    camera.lookAt(new THREE.Vector3(data.look_x, data.look_y, data.look_z));
+                    renderer.render(scene, camera);
+                }
+
+                var gui = new dat.GUI();
+                gui.add(data, "x", -10, 10, 0.5).onChange(redraw);
+                gui.add(data, "y", -10, 10, 0.5).onChange(redraw);
+                gui.add(data, "z", -10, 10, 0.5).onChange(redraw);
+                gui.add(data, "look_x", -10, 10, 0.5).onChange(redraw);
+                gui.add(data, "look_y", -10, 10, 0.5).onChange(redraw);
+                gui.add(data, "look_z", -10, 10, 0.5).onChange(redraw);
+
+                document.body.appendChild(renderer.domElement);
+            }
+
+            function init() {
+                textureLoader = new THREE.TextureLoader();
+                scene = new THREE.Scene();
+                renderer = new THREE.WebGLRenderer();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                camera = new THREE.PerspectiveCamera(90, window.innerWidth / window.innerHeight, 1, 10000);
+                camera.up.set(0, 0, 1);
+
+                addLight();
+                addCube();
+                addBox();
+                addBall();
+                addGround();
+                addGUI();
+                
+                redraw();
+            }
+        </script>
+    </body>
+</html>
+
